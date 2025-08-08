@@ -6,6 +6,8 @@ import { userModel } from "./db";
 import jwt from "jsonwebtoken";
 import { authmeddleware } from "./middlewares/authmiddleware";
 import axios from "axios";
+const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) =>
+  Promise.resolve(fn(req, res, next)).catch(next);
 
 const CLIENT_ID=process.env.CLIENT_ID!;
 const CLIENT_SECRET=process.env.CLIENT_SECRET!;
@@ -51,7 +53,7 @@ if (!apiKey) {
 }
 
 
-app.post("/template", async (req, res) => {
+app.post("/template", asyncHandler(async (req, res) => {
   try {
     console.log("template route is hit");
     let { prompt } = req.body;
@@ -134,10 +136,10 @@ app.post("/template", async (req, res) => {
     console.error("Error generating template:", error);
     res.status(500).json({ error: "Failed to generate template" });
   }
-});
+}));
 
 
-app.post("/signup", async (req, res) => {
+app.post("/signup", asyncHandler(async (req, res)=> {
   try {
     const validation = zodvalidationSchema.parse(req.body);
 
@@ -174,17 +176,17 @@ app.post("/signin", async (req, res) => {
       message: "invalide credentials"
     })
   }
-})
-app.delete("/signout", authmeddleware, async (req, res) => {
+}))
+app.delete("/signout", authmeddleware, asyncHandler(async (req, res)=> {
   const user = (req as any).user;
   await userModel.deleteOne({ email: user.email });
   res.status(200).json({
     message: `User ${user.email} signed out successfully`,
   });
-})
+}))
 
 
-app.get("/user/:userId", async (req, res) => {
+app.get("/user/:userId", asyncHandler(async (req, res) => {
   try {
     const user = await userModel.findById(req.params.userId);
     res.status(201).json({ user });
@@ -192,8 +194,8 @@ app.get("/user/:userId", async (req, res) => {
   catch (err) {
     res.status(400).json({ error: "user not found" });
   }
-})
-app.get("/token/:userId", async (req, res) => {
+}))
+app.get("/token/:userId", asyncHandler(async (req, res) => {
   try {
     const tokens = await tokenModel.findById(req.params.userId);
     res.status(201).json({ tokens });
@@ -201,9 +203,9 @@ app.get("/token/:userId", async (req, res) => {
   catch (e) {
     res.status(404).json({ error: "Token data not found" });
   }
-})
+}))
 
-app.get("/api/auth/google/callback",async (req, res)=>{
+app.get("/api/auth/google/callback",asyncHandler(async (req, res)=>{
   const code=req.query.code;
   try{
     const tokenResponse = await axios.post("https://oauth2.googleapis.com/token",null,{
@@ -231,7 +233,7 @@ app.get("/api/auth/google/callback",async (req, res)=>{
     
     
   }
-})
+}))
 
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
