@@ -4,7 +4,6 @@ import cors from "cors";
 import { tokenModel, zodvalidationSchema } from "./db";
 import { userModel } from "./db";
 import jwt from "jsonwebtoken";
-import { Response,Request } from "express";
 import { authmeddleware } from "./middlewares/authmiddleware";
 import axios from "axios";
 
@@ -52,7 +51,7 @@ if (!apiKey) {
 }
 
 
-app.post("/template", async (req: Request, res: Response) => {
+app.post("/template", async (req, res) => {
   try {
     console.log("template route is hit");
     let { prompt } = req.body;
@@ -136,7 +135,7 @@ app.post("/template", async (req: Request, res: Response) => {
 });
 
 
-app.post("/signup", async (req: Request, res: Response) => {
+app.post("/signup", async (req, res) => {
   try {
     const validation = zodvalidationSchema.parse(req.body);
 
@@ -155,7 +154,7 @@ app.post("/signup", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/signin", async (req: Request, res: Response) => {
+app.post("/signin", async (req, res) => {
 
   const validateData = zodvalidationSchema.parse(req.body)
   const response = await userModel.findOne({ email: validateData.email });
@@ -173,7 +172,7 @@ app.post("/signin", async (req: Request, res: Response) => {
     })
   }
 })
-app.delete("/signout", authmeddleware, async (req: any, res: any) => {
+app.delete("/signout", authmeddleware, async (req, res) => {
   const user = (req as any).user;
   await userModel.deleteOne({ email: user.email });
   return res.status(200).json({
@@ -182,7 +181,7 @@ app.delete("/signout", authmeddleware, async (req: any, res: any) => {
 })
 
 
-app.get("/user/:userId", async (req: Request, res: Response) => {
+app.get("/user/:userId", async (req, res) => {
   try {
     const user = await userModel.findById(req.params.userId);
     res.status(201).json({ user });
@@ -201,7 +200,7 @@ app.get("/token/:userId", async (req, res) => {
   }
 })
 
-app.get("/api/auth/google/callback",async (req: Request, res: Response)=>{
+app.get("/api/auth/google/callback",async (req, res)=>{
   const code=req.query.code;
   try{
     const tokenResponse = await axios.post("https://oauth2.googleapis.com/token",null,{
