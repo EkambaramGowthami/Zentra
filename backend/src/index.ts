@@ -57,7 +57,8 @@ app.post("/template", async (req, res) => {
     let { prompt } = req.body;
 
     if (!prompt || typeof prompt !== "string") {
-      return res.status(400).json({ error: "Prompt is required and must be a string." });
+      res.status(400).json({ error: "Prompt is required and must be a string." });
+      return;
     }
     let langauage = "";
     if(detectLanguageFromPromptOrFallback(prompt) == "unknown"){
@@ -89,7 +90,8 @@ app.post("/template", async (req, res) => {
     if (!openrouterRes.ok) {
       const errorBody = await openrouterRes.text();
       console.error("OpenRouter API Error:", errorBody);
-      return res.status(500).json({ error: "OpenRouter API call failed" });
+      res.status(500).json({ error: "OpenRouter API call failed" });
+      return;
     }
 
     const result = await openrouterRes.json();
@@ -141,7 +143,8 @@ app.post("/signup", async (req, res) => {
 
     const existingData = await userModel.findOne({ email: validation.email });
     if (existingData) {
-      return res.status(400).json({ message: "email already exists" });
+      res.status(400).json({ message: "email already exists" });
+      return;
     }
 
     const user = await userModel.create(validation);
@@ -175,7 +178,7 @@ app.post("/signin", async (req, res) => {
 app.delete("/signout", authmeddleware, async (req, res) => {
   const user = (req as any).user;
   await userModel.deleteOne({ email: user.email });
-  return res.status(200).json({
+  res.status(200).json({
     message: `User ${user.email} signed out successfully`,
   });
 })
